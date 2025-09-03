@@ -1,0 +1,9 @@
+python-dotenv>=1.0.0
+langchain-google-genai>=0.0.11
+sentence-transformer
+huggingface
+huggingface-hub
+langchain
+langchain-community
+langchain-core>=0.1.27
+streamlit
