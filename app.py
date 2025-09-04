@@ -7,9 +7,9 @@ from langchain.schema import HumanMessage
 from dotenv import load_dotenv
 load_dotenv()
 
-port = int(os.getenv("PORT", 8501))
-st.set_option("server.port", port)
-st.set_option("server.address", "0.0.0.0")
+# port = int(os.getenv("PORT", 8501))
+# st.set_option("server.port", port)
+# st.set_option("server.address", "0.0.0.0")
 
 @st.cache_resource
 def load_embedding_model():
