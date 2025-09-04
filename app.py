@@ -3,7 +3,7 @@ import streamlit as st
 from sentence_transformers import SentenceTransformer
 from pinecone import Pinecone
 from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain.schema import SystemMessage
+from langchain.schema import HumanMessage
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -32,19 +32,18 @@ def get_answer(user_input):
     context = "\n\n---\n\n".join(retrieved_docs)
 
     # Minimal prompt to reduce LLM processing time
-    prompt = f"""You are an assistant for answering questions in Hindi.
-Use the context to answer.
+    prompt = f"""You are an assistant for answering questions in Hindi. The questions will be in hindi, so read the question and the context carefully to answer it.
 
-Context:
-{context}
+    Context:
+    {context}
 
-Question:
-{user_input}
+    Question:
+    {user_input}
 
-Answer in Hindi:"""
+    Answer in Hindi:"""
 
     llm_model = ChatGoogleGenerativeAI(model="gemini-2.5-flash", api_key=os.getenv("GEMINI_API_KEY"))
-    response = llm_model.invoke([SystemMessage(content=prompt)])
+    response = llm_model.invoke([HumanMessage(content=prompt)])
     return response.content
 
 st.set_page_config(page_title="Jain-Bot")
