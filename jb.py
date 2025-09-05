@@ -2,6 +2,7 @@ import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 import os
+import streamlit as st
 from dotenv import load_dotenv
 from sentence_transformers import SentenceTransformer
 from langchain_google_genai import ChatGoogleGenerativeAI
@@ -11,35 +12,22 @@ from pinecone import Pinecone
 # Load environment variables once
 load_dotenv()
 
-# --- Cache heavy models/clients globally ---
-_embedding_model = None
-_llm_model = None
-_index = None
-_namespace = "jain-vidya-3"
-
-
-def get_embedding_model():
-    global _embedding_model
-    if _embedding_model is None:
-        # Load once, reuse
-        _embedding_model = SentenceTransformer("intfloat/multilingual-e5-large")
+@st.cache_resource
+def get_embedding_model():    
+    _embedding_model = SentenceTransformer("intfloat/multilingual-e5-large")
     return _embedding_model
 
-
+@st.cache_resource
 def get_llm_model():
-    global _llm_model
-    if _llm_model is None:
-        api_key = os.getenv("GEMINI_API_KEY")
-        _llm_model = ChatGoogleGenerativeAI(model="gemini-2.5-flash", api_key=api_key)
+    api_key = os.getenv("GEMINI_API_KEY")
+    _llm_model = ChatGoogleGenerativeAI(model="gemini-2.5-flash", api_key=api_key)
     return _llm_model
 
-
+@st.cache_resource
 def get_pinecone_index():
-    global _index
-    if _index is None:
-        pinecone_api_key = os.getenv("PINECONE_API_KEY")
-        pinecone_client = Pinecone(api_key=pinecone_api_key)
-        _index = pinecone_client.Index("jain-bot")
+    pinecone_api_key = os.getenv("PINECONE_API_KEY")
+    pinecone_client = Pinecone(api_key=pinecone_api_key)
+    _index = pinecone_client.Index("jain-bot")
     return _index
 
 
@@ -51,8 +39,9 @@ def chatbot(user_input: str) -> str:
     ).tolist()
 
     index = get_pinecone_index()
+    namespace = "jain-vidya-3"
     search_result = index.query(
-        namespace=_namespace,
+        namespace=namespace,
         vector=vectorized_query,
         top_k=3,
         include_metadata=True

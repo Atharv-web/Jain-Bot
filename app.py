@@ -1,6 +1,5 @@
 import streamlit as st
-import asyncio
-from jb import chatbot  # import from your optimized jain_agent.py
+from jb import chatbot
 
 # --- Streamlit Page Config ---
 st.set_page_config(
@@ -10,7 +9,6 @@ st.set_page_config(
 )
 
 st.title("Jain-Bot")
-# st.markdown("Ask me anything about Jain philosophy 🙏")
 
 # --- Session State for Chat History ---
 if "chat_history" not in st.session_state:
