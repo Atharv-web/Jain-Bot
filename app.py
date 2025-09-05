@@ -1,27 +1,41 @@
-from fastapi import FastAPI,Request
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-from api.jain_agent import chatbot
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
-import os
+import streamlit as st
+import asyncio
+from jb import chatbot  # import from your optimized jain_agent.py
 
-app = FastAPI()
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins = ["*"],
-    allow_headers = ["*"],
-    allow_methods = ["*"],
+# --- Streamlit Page Config ---
+st.set_page_config(
+    page_title="🕉 JainBot",
+    page_icon="🕉",
+    layout="centered"
 )
 
-@app.get("/")
-async def read_index():
-    return FileResponse(os.path.join("public", "index.html"))
+st.title("Jain-Bot")
+# st.markdown("Ask me anything about Jain philosophy 🙏")
 
-@app.post("/chat")
-async def chat_endpoint(req:Request):
-    body = await req.json()
-    user_query = body.get("query","")
-    answer = await chatbot(user_query)
-    return {"answer": answer}
+# --- Session State for Chat History ---
+if "chat_history" not in st.session_state:
+    st.session_state.chat_history = []
+
+# --- Chat Input ---
+user_input = st.chat_input("Ask your questions...")
+
+if user_input:
+    # Store user query
+    st.session_state.chat_history.append(("user", user_input))
+
+    with st.spinner("Thinking..."):
+        try:
+            # Run chatbot (synchronous function from jain_agent.py)
+            answer = chatbot(user_input)
+        except Exception as e:
+            answer = f"⚠️ Server error: {e}"
+
+    # Store bot response
+    st.session_state.chat_history.append(("bot", answer))
+
+# --- Render Chat Messages ---
+for sender, msg in st.session_state.chat_history:
+    if sender == "user":
+        st.chat_message("user").markdown(msg)
+    else:
+        st.chat_message("assistant").markdown(msg)
