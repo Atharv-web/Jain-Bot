@@ -3,8 +3,6 @@ warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 import os
 from langchain_google_genai import ChatGoogleGenerativeAI
-from dotenv import load_dotenv
-load_dotenv()
 from sentence_transformers import SentenceTransformer
 from langchain_core.messages import SystemMessage
 from pinecone import Pinecone
