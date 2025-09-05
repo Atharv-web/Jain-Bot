@@ -1,11 +1,6 @@
 python-dotenv
 langchain-google-genai
 sentence-transformers
-huggingface
-huggingface-hub
-langchain
-langchain-community
-langchain-core
 fastapi
 pinecone
 uvicorn
