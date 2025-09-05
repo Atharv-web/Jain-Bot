@@ -34,7 +34,7 @@ namespace = "jain-vidya-3"
 async def chatbot(user_input: str) -> str:
     "Async Chatbot"
     embedding = get_embedding_model()
-    vectorized_query = await asyncio.to_thread(embedding.encode(f"query: {user_input}", normalize_embeddings = True).tolist())
+    vectorized_query = await asyncio.to_thread(lambda : embedding.encode(f"query: {user_input}", normalize_embeddings = True).tolist())
     
     search_result = index.query(
         namespace=namespace,
