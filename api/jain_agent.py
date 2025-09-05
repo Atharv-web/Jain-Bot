@@ -1,14 +1,27 @@
 import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
-
+import asyncio
 import os
 from langchain_google_genai import ChatGoogleGenerativeAI
 from sentence_transformers import SentenceTransformer
 from langchain_core.messages import SystemMessage
 from pinecone import Pinecone
 
-# embedding model
-embedding_model = SentenceTransformer("intfloat/multilingual-e5-large")
+embedding_model = None 
+llm_model = None
+
+def get_embedding_model():
+    global embedding_model
+    if embedding_model is None:
+        embedding_model = SentenceTransformer("intfloat/multilingual-e5-large")
+    return embedding_model
+
+def get_llm_model():
+    global llm_model
+    if llm_model is None:
+        api_key = os.getenv("GEMINI_API_KEY")
+        llm_model = ChatGoogleGenerativeAI(model="gemini-2.5-flash" ,api_key=api_key)    
+    return llm_model
 
 # pinecone setup
 index_name = "jain-bot"
@@ -17,14 +30,11 @@ pinecone_client = Pinecone(api_key = pinecone_api_key)
 index= pinecone_client.Index(index_name)
 namespace = "jain-vidya-3"
 
-# llm setup
-api_key = os.getenv("GEMINI_API_KEY")
-llm_model = ChatGoogleGenerativeAI(model="gemini-2.5-flash" ,api_key=api_key)
-
 
 async def chatbot(user_input: str) -> str:
     "Async Chatbot"
-    vectorized_query = embedding_model.encode(f"query: {user_input}", normalize_embeddings = True).tolist()
+    embedding = get_embedding_model()
+    vectorized_query = await asyncio.to_thread(embedding.encode(f"query: {user_input}", normalize_embeddings = True).tolist())
     
     search_result = index.query(
         namespace=namespace,
@@ -50,6 +60,6 @@ async def chatbot(user_input: str) -> str:
     Answer:"""
 
     formatted_prompt = rag_prompt.format(context=db_context,question=user_input)
-
-    model_response = llm_model.invoke([SystemMessage(content=formatted_prompt)])
+    llm = get_llm_model()
+    model_response = await asyncio.to_thread(llm.invoke([SystemMessage(content=formatted_prompt)]))
     return model_response.content
