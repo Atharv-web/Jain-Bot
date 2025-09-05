@@ -74,9 +74,6 @@ def chatbot(user_input: str) -> str:
     Answer:"""
 
     llm = get_llm_model()
-    model_response = llm.invoke([
-        SystemMessage(content="You are a helpful assistant."),
-        HumanMessage(content=rag_prompt)
-    ])
+    model_response = llm.invoke([HumanMessage(content=rag_prompt)])
 
     return model_response.content
