@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JainBot</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { background: linear-gradient(to right, #e0f2f1, #f1f8e9); }
+    .chat-box { height: 80vh; overflow-y: auto; }
+    textarea { resize: none; }
+  </style>
+</head>
+<body class="flex justify-center items-center h-screen">
+  <div class="w-full max-w-2xl bg-white shadow-lg rounded-2xl p-4 flex flex-col">
+    <h1 class="text-2xl font-bold mb-4 text-center text-green-800">🕉 JainBot</h1>
+    
+    <div id="chat" class="chat-box flex-1 border p-3 rounded-xl bg-gray-50"></div>
+
+    <div class="flex mt-3">
+      <textarea id="userInput" 
+        class="flex-1 border rounded-xl p-2 focus:outline-none focus:ring-2 focus:ring-green-400"
+        rows="1" placeholder="Ask your question..."></textarea>
+      <button id="sendBtn" 
+        class="ml-2 px-4 bg-green-600 text-white rounded-xl hover:bg-green-700">Send</button>
+    </div>
+  </div>
+
+  <script>
+    const chatBox = document.getElementById("chat");
+    const userInput = document.getElementById("userInput");
+    const sendBtn = document.getElementById("sendBtn");
+
+    // Auto-resize textarea
+    userInput.addEventListener("input", () => {
+      userInput.style.height = "auto";
+      userInput.style.height = userInput.scrollHeight + "px";
+    });
+
+    function addMessage(text, sender) {
+      const div = document.createElement("div");
+      div.className = sender === "user" 
+        ? "text-right mb-2"
+        : "text-left mb-2";
+      div.innerHTML = `
+        <span class="inline-block px-3 py-2 rounded-xl ${
+          sender === "user" 
+            ? "bg-green-600 text-white" 
+            : "bg-gray-200 text-gray-800"
+        }">${text}</span>`;
+      chatBox.appendChild(div);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    async function sendMessage() {
+      const question = userInput.value.trim();
+      if (!question) return;
+      addMessage(question, "user");
+      userInput.value = "";
+      userInput.style.height = "auto";
+
+      addMessage("...", "bot"); // loading
+
+      try {
+        const res = await fetch("/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ query: question })
+        });
+        const data = await res.json();
+        
+        chatBox.lastChild.remove(); // remove "..."
+        addMessage(data.answer, "bot");
+      } catch (err) {
+        chatBox.lastChild.remove();
+        addMessage("⚠️ Error connecting to server", "bot");
+      }
+    }
+
+    sendBtn.addEventListener("click", sendMessage);
+    userInput.addEventListener("keydown", e => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+  </script>
+</body>
+</html>
