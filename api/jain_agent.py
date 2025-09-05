@@ -4,7 +4,7 @@ import asyncio
 import os
 from langchain_google_genai import ChatGoogleGenerativeAI
 from sentence_transformers import SentenceTransformer
-from langchain_core.messages import SystemMessage
+from langchain_core.messages import HumanMessage
 from pinecone import Pinecone
 
 embedding_model = None 
@@ -61,5 +61,5 @@ async def chatbot(user_input: str) -> str:
 
     formatted_prompt = rag_prompt.format(context=db_context,question=user_input)
     llm = get_llm_model()
-    model_response = await asyncio.to_thread(llm.invoke([SystemMessage(content=formatted_prompt)]))
+    model_response = llm.invoke([HumanMessage(content=formatted_prompt)])
     return model_response.content
